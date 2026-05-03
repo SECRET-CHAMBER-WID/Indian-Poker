@@ -8,15 +8,17 @@ import type { Room, ToastState } from '../../types';
 import { BrandMark } from '../neumorphic/BrandMark';
 import { Button } from '../neumorphic/Button';
 import { Input } from '../neumorphic/Input';
+import { MobileBottomNav } from '../neumorphic/MobileBottomNav';
 import { Panel } from '../neumorphic/Panel';
 import { CreateRoomModal } from './CreateRoomModal';
 import { RoomCard } from './RoomCard';
 
 interface LobbyProps {
   onToast: (toast: ToastState) => void;
+  onEnterRoom: (roomId: string) => void;
 }
 
-export function Lobby({ onToast }: LobbyProps) {
+export function Lobby({ onToast, onEnterRoom }: LobbyProps) {
   const { profile, logout } = useAuth();
   const { value: rooms } = useRealtimeValue<Record<string, Room>>('rooms');
   const [createOpen, setCreateOpen] = useState(false);
@@ -25,6 +27,7 @@ export function Lobby({ onToast }: LobbyProps) {
 
   const roomList = useMemo(() => {
     return Object.values(rooms ?? {})
+      .filter((room) => !room.isPrivate && room.status === 'waiting')
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, 30);
   }, [rooms]);
@@ -37,8 +40,9 @@ export function Lobby({ onToast }: LobbyProps) {
     setJoining(true);
 
     try {
-      await joinRoom(roomId, profile);
+      const joinedRoomId = await joinRoom(roomId, profile);
       onToast({ type: 'success', message: '방에 입장했습니다.' });
+      onEnterRoom(joinedRoomId);
     } catch (error) {
       onToast({ type: 'error', message: error instanceof Error ? error.message : '방 입장에 실패했습니다.' });
     } finally {
@@ -50,8 +54,9 @@ export function Lobby({ onToast }: LobbyProps) {
     setJoining(true);
 
     try {
-      await joinRoomByCode(roomCode, profile);
+      const joinedRoomId = await joinRoomByCode(roomCode, profile);
       onToast({ type: 'success', message: '방 코드로 입장했습니다.' });
+      onEnterRoom(joinedRoomId);
     } catch (error) {
       onToast({ type: 'error', message: error instanceof Error ? error.message : '방 코드를 확인해 주세요.' });
     } finally {
@@ -60,9 +65,9 @@ export function Lobby({ onToast }: LobbyProps) {
   };
 
   return (
-    <main className="min-h-screen bg-base px-3 py-4 text-ink sm:px-4 sm:py-6">
+    <main className="min-h-screen bg-base px-3 pb-28 pt-3 text-ink sm:px-4 sm:py-6 lg:pb-6">
       <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
-        <header className="rounded-[22px] bg-base p-4 shadow-neu sm:rounded-[28px] sm:p-5 md:flex md:items-center md:justify-between">
+        <header className="sticky top-0 z-30 rounded-[22px] bg-base/95 p-4 shadow-neu backdrop-blur sm:rounded-[28px] sm:p-5 md:flex md:items-center md:justify-between lg:static">
           <div>
             <BrandMark />
             <h1 className="mt-3 text-3xl font-black">로비</h1>
@@ -93,7 +98,14 @@ export function Lobby({ onToast }: LobbyProps) {
             placeholder="ABCDE"
             value={roomCode}
           />
-          <Button className="w-full lg:w-auto" disabled={joining || !roomCode.trim()} icon={<Search size={18} />} onClick={joinByCode} variant="primary">
+          <Button
+            className="w-full lg:w-auto"
+            data-testid="join-code-submit"
+            disabled={joining || !roomCode.trim()}
+            icon={<Search size={18} />}
+            onClick={joinByCode}
+            variant="primary"
+          >
             코드로 입장
           </Button>
         </Panel>
@@ -104,8 +116,8 @@ export function Lobby({ onToast }: LobbyProps) {
               <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
                 <DoorOpen className="text-mint" size={42} />
                 <div>
-                  <h2 className="text-xl font-black">아직 열린 방이 없습니다.</h2>
-                  <p className="mt-2 text-sm font-semibold text-muted">첫 방을 만들고 참가자를 초대해 보세요.</p>
+                  <h2 className="text-xl font-black">공개 방이 없습니다.</h2>
+                  <p className="mt-2 text-sm font-semibold text-muted">가운데 + 버튼으로 테이블을 만들 수 있습니다.</p>
                 </div>
               </div>
             </Panel>
@@ -126,7 +138,21 @@ export function Lobby({ onToast }: LobbyProps) {
         </section>
       </div>
 
-      <CreateRoomModal onClose={() => setCreateOpen(false)} onToast={onToast} open={createOpen} profile={profile} />
+      <CreateRoomModal
+        onClose={() => setCreateOpen(false)}
+        onCreated={onEnterRoom}
+        onToast={onToast}
+        open={createOpen}
+        profile={profile}
+      />
+      <MobileBottomNav
+        active="lobby"
+        onAlerts={() => onToast({ type: 'info', message: '새 알림이 없습니다.' })}
+        onChat={() => onToast({ type: 'info', message: '방에 들어가면 채팅을 사용할 수 있습니다.' })}
+        onCreate={() => setCreateOpen(true)}
+        onLobby={() => undefined}
+        onProfile={() => onToast({ type: 'info', message: `${profile.nickname} · ${profile.credits.toLocaleString()} 크레딧` })}
+      />
     </main>
   );
 }

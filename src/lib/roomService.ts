@@ -19,6 +19,7 @@ import {
   getPlayers,
   prepareRound,
   reduceBettingAction,
+  reduceOpenVote,
   resetRoomForNextRound,
   resetTableCredits,
   settleShowdown
@@ -76,7 +77,7 @@ function normalizeCode(code: string) {
 
 export async function createRoom(
   profile: UserProfile,
-  input: { name: string; maxPlayers: number; ante: number; minRaise: number; turnSeconds: number }
+  input: { name: string; maxPlayers: number; ante: number; minRaise: number; turnSeconds: number; isPrivate?: boolean }
 ) {
   const roomRef = push(ref(database, 'rooms'));
   const now = Date.now();
@@ -88,6 +89,7 @@ export async function createRoom(
     createdBy: profile.uid,
     createdByName: profile.nickname,
     maxPlayers: input.maxPlayers,
+    isPrivate: Boolean(input.isPrivate),
     ante: input.ante,
     minRaise: input.minRaise,
     turnSeconds: input.turnSeconds,
@@ -146,12 +148,8 @@ export async function joinRoom(roomId: string, profile: UserProfile) {
       next.players[profile.uid] = buildRoomPlayer(profile, next);
       resetReadyFlags(next);
     } else {
-      next.spectators = next.spectators ?? {};
-      next.spectators[profile.uid] = {
-        uid: profile.uid,
-        nickname: profile.nickname,
-        joinedAt: Date.now()
-      };
+      failure = '게임 중인 방에는 입장할 수 없습니다.';
+      return;
     }
 
     next.updatedAt = Date.now();
@@ -317,6 +315,28 @@ export async function submitBetAction(roomId: string, uid: string, action: BetAc
 
   if (failure || !result.committed) {
     throw new Error(failure || '베팅 처리가 취소되었습니다.');
+  }
+}
+
+export async function submitOpenVote(roomId: string, uid: string) {
+  let failure = '';
+
+  const result = await runTransaction(ref(database, `rooms/${roomId}`), (current: Room | null) => {
+    if (!current) {
+      failure = '방을 찾을 수 없습니다.';
+      return;
+    }
+
+    try {
+      return reduceOpenVote(current, uid);
+    } catch (error) {
+      failure = error instanceof Error ? error.message : 'OPEN 처리에 실패했습니다.';
+      return;
+    }
+  });
+
+  if (failure || !result.committed) {
+    throw new Error(failure || 'OPEN 요청이 취소되었습니다.');
   }
 }
 

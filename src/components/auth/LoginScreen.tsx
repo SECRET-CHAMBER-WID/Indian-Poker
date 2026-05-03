@@ -71,7 +71,7 @@ export function LoginScreen({ onToast }: LoginScreenProps) {
               </p>
             </div>
             <div className="grid max-w-3xl grid-cols-3 gap-2 sm:gap-4">
-              {['방 생성/입장', '턴 타이머', '크레딧 정산'].map((item) => (
+              {['방 생성/입장', 'OPEN 공개', '크레딧 정산'].map((item) => (
                 <div key={item} className="rounded-2xl bg-base p-3 text-center text-xs font-bold text-muted shadow-neu-sm sm:rounded-3xl sm:p-5 sm:text-base">
                   {item}
                 </div>

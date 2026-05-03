@@ -10,6 +10,7 @@ import type { ToastState } from './types';
 export default function App() {
   const { profile, loading } = useAuth();
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
 
   const showToast = useCallback((nextToast: ToastState) => {
     setToast(nextToast);
@@ -24,6 +25,14 @@ export default function App() {
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
 
+  useEffect(() => {
+    setActiveRoomId(null);
+  }, [profile?.uid]);
+
+  useEffect(() => {
+    window.scrollTo({ left: 0, top: 0 });
+  }, [activeRoomId, profile?.uid]);
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-base p-6 text-center text-lg font-black text-muted">
@@ -36,8 +45,10 @@ export default function App() {
     <>
       {!profile ? <LoginScreen onToast={showToast} /> : null}
       {profile?.role === 'master' ? <AdminPanel onToast={showToast} /> : null}
-      {profile?.role === 'player' && !profile.currentRoom ? <Lobby onToast={showToast} /> : null}
-      {profile?.role === 'player' && profile.currentRoom ? <GameRoom onToast={showToast} roomId={profile.currentRoom} /> : null}
+      {profile?.role === 'player' && !activeRoomId ? <Lobby onEnterRoom={setActiveRoomId} onToast={showToast} /> : null}
+      {profile?.role === 'player' && activeRoomId ? (
+        <GameRoom onExit={() => setActiveRoomId(null)} onToast={showToast} roomId={activeRoomId} />
+      ) : null}
       <Toast toast={toast} />
     </>
   );

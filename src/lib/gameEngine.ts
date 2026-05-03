@@ -1,5 +1,5 @@
 import { DEFAULT_CREDITS } from './authService';
-import type { BetAction, Card, GameLog, Room, RoomPlayer } from '../types';
+import type { BetAction, Card, ChatMessage, GameLog, Room, RoomPlayer } from '../types';
 
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 8;
@@ -8,11 +8,14 @@ function cloneRoom(room: Room): Room {
   return JSON.parse(JSON.stringify(room)) as Room;
 }
 
+function makeId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function makeLog(message: string, actorUid?: string): GameLog {
-  const createdAt = Date.now();
   const log: GameLog = {
-    id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
-    createdAt,
+    id: makeId(),
+    createdAt: Date.now(),
     message
   };
 
@@ -28,6 +31,21 @@ function addLog(room: Room, message: string, actorUid?: string) {
   room.logs = {
     ...(room.logs ?? {}),
     [log.id]: log
+  };
+}
+
+function addSystemChat(room: Room, message: string) {
+  const chat: ChatMessage = {
+    id: makeId(),
+    uid: 'system',
+    nickname: '게임',
+    message,
+    createdAt: Date.now()
+  };
+
+  room.chat = {
+    ...(room.chat ?? {}),
+    [chat.id]: chat
   };
 }
 
@@ -104,12 +122,12 @@ export function prepareRound(room: Room, starterUid: string): Room {
     nextPlayer.totalBet = 0;
 
     if (turnOrder.includes(player.uid)) {
-      const ante = Math.min(next.ante, nextPlayer.creditsAtTable);
-      nextPlayer.creditsAtTable -= ante;
-      nextPlayer.roundBet = ante;
-      nextPlayer.totalBet = ante;
+      const basicBet = Math.min(next.ante, nextPlayer.creditsAtTable);
+      nextPlayer.creditsAtTable -= basicBet;
+      nextPlayer.roundBet = basicBet;
+      nextPlayer.totalBet = basicBet;
       nextPlayer.status = nextPlayer.creditsAtTable === 0 ? 'allIn' : 'active';
-      pot += ante;
+      pot += basicBet;
     } else {
       nextPlayer.status = 'out';
     }
@@ -127,8 +145,8 @@ export function prepareRound(room: Room, starterUid: string): Room {
     currentTurnUid: firstTurnUid,
     turnOrder,
     turnStartedAt: now,
-    turnEndsAt: firstTurnUid ? now + next.turnSeconds * 1000 : now,
     actionsThisRound: {},
+    openVotes: {},
     startedAt: now
   };
 
@@ -185,12 +203,8 @@ function moveTurn(room: Room, actorUid: string) {
     return;
   }
 
-  const nextTurnUid = getNextTurnUid(room, actorUid);
-  const now = Date.now();
-
-  room.game.currentTurnUid = nextTurnUid;
-  room.game.turnStartedAt = now;
-  room.game.turnEndsAt = nextTurnUid ? now + room.turnSeconds * 1000 : now;
+  room.game.currentTurnUid = getNextTurnUid(room, actorUid);
+  room.game.turnStartedAt = Date.now();
 }
 
 function awardSingleRemainingPlayer(room: Room) {
@@ -201,7 +215,7 @@ function awardSingleRemainingPlayer(room: Room) {
     return;
   }
 
-  const message = `${winner.nickname}님이 마지막까지 남아 팟 ${room.game.pot} 크레딧을 가져갑니다.`;
+  const message = `${winner.nickname}님이 마지막까지 남아 ${room.game.pot} 크레딧을 가져갑니다.`;
 
   room.players[winner.uid] = {
     ...winner,
@@ -215,11 +229,12 @@ function awardSingleRemainingPlayer(room: Room) {
     phase: 'showdown',
     currentTurnUid: null,
     winnerUids: [winner.uid],
-    settlementId: `${now}-${Math.random().toString(36).slice(2, 8)}`,
+    settlementId: makeId(),
     showdownMessage: message,
     endedAt: now
   };
   addLog(room, message, winner.uid);
+  addSystemChat(room, message);
 }
 
 export function reduceBettingAction(room: Room, actorUid: string, action: BetAction, raiseTo?: number): Room {
@@ -228,10 +243,11 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
   const actor = next.players?.[actorUid];
 
   if (!game || game.phase !== 'betting') {
-    throw new Error('현재 베팅 가능한 상태가 아닙니다.');
+    throw new Error('지금은 베팅할 수 없습니다.');
   }
 
   game.actionsThisRound = game.actionsThisRound ?? {};
+  game.openVotes = game.openVotes ?? {};
   game.turnOrder = game.turnOrder ?? getLivePlayers(next).map((player) => player.uid);
 
   if (!actor || actor.status !== 'active') {
@@ -239,7 +255,7 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
   }
 
   if (game.currentTurnUid !== actorUid) {
-    throw new Error('현재 턴이 아닙니다.');
+    throw new Error('현재 차례가 아닙니다.');
   }
 
   if (!next.players) {
@@ -252,7 +268,7 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
     updatedActor.status = 'folded';
     game.actionsThisRound[actorUid] = true;
     next.players[actorUid] = updatedActor;
-    addLog(next, `${actor.nickname}님이 폴드했습니다.`, actorUid);
+    addLog(next, `${actor.nickname}님이 드랍했습니다.`, actorUid);
 
     if (getLivePlayers(next).length === 1) {
       awardSingleRemainingPlayer(next);
@@ -270,7 +286,7 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
     game.pot += payment;
     game.actionsThisRound[actorUid] = true;
     next.players[actorUid] = updatedActor;
-    addLog(next, `${actor.nickname}님이 ${payment} 크레딧을 콜했습니다.`, actorUid);
+    addLog(next, payment > 0 ? `${actor.nickname}님이 ${payment} 크레딧을 콜했습니다.` : `${actor.nickname}님이 콜했습니다.`, actorUid);
   }
 
   if (action === 'raise') {
@@ -279,11 +295,11 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
     const maxTarget = updatedActor.roundBet + updatedActor.creditsAtTable;
 
     if (targetBet < minTarget) {
-      throw new Error(`레이즈는 최소 ${minTarget}까지 올려야 합니다.`);
+      throw new Error(`최소 ${minTarget}까지 레이스해야 합니다.`);
     }
 
     if (targetBet > maxTarget) {
-      throw new Error('보유 크레딧보다 많이 레이즈할 수 없습니다.');
+      throw new Error('보유 크레딧보다 많이 레이스할 수 없습니다.');
     }
 
     const payment = targetBet - updatedActor.roundBet;
@@ -294,8 +310,9 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
     game.pot += payment;
     game.currentBet = targetBet;
     game.actionsThisRound = { [actorUid]: true };
+    game.openVotes = {};
     next.players[actorUid] = updatedActor;
-    addLog(next, `${actor.nickname}님이 ${targetBet}까지 레이즈했습니다.`, actorUid);
+    addLog(next, `${actor.nickname}님이 ${targetBet}까지 레이스했습니다.`, actorUid);
   }
 
   if (isBettingSettled(next)) {
@@ -307,12 +324,51 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
       currentTurnUid: null,
       endedAt: Date.now()
     };
-    addLog(next, '베팅이 종료되어 쇼다운을 진행합니다.');
+    addLog(next, '베팅이 끝나 카드를 공개합니다.');
     return next;
   }
 
   moveTurn(next, actorUid);
   next.updatedAt = Date.now();
+  return next;
+}
+
+export function reduceOpenVote(room: Room, actorUid: string): Room {
+  const next = cloneRoom(room);
+  const game = next.game;
+  const actor = next.players?.[actorUid];
+
+  if (!game || game.phase !== 'betting') {
+    throw new Error('지금은 OPEN을 선택할 수 없습니다.');
+  }
+
+  if (!actor || (actor.status !== 'active' && actor.status !== 'allIn')) {
+    throw new Error('게임에 남아 있는 플레이어만 OPEN을 선택할 수 있습니다.');
+  }
+
+  const livePlayers = getLivePlayers(next);
+  game.openVotes = {
+    ...(game.openVotes ?? {}),
+    [actorUid]: true
+  };
+
+  addLog(next, `${actor.nickname}님이 OPEN에 동의했습니다.`, actorUid);
+
+  if (livePlayers.length >= MIN_PLAYERS && livePlayers.every((player) => game.openVotes?.[player.uid])) {
+    const now = Date.now();
+    next.status = 'showdown';
+    next.updatedAt = now;
+    next.game = {
+      ...game,
+      phase: 'showdown',
+      currentTurnUid: null,
+      endedAt: now
+    };
+    addLog(next, '모든 플레이어가 OPEN에 동의해 카드를 공개합니다.');
+  } else {
+    next.updatedAt = Date.now();
+  }
+
   return next;
 }
 
@@ -327,13 +383,18 @@ export function settleShowdown(room: Room, cards: Record<string, Card>): Room {
   const livePlayers = getLivePlayers(next);
 
   if (livePlayers.length === 0 || !next.players) {
+    const message = '남은 플레이어가 없어 게임을 종료했습니다.';
     next.status = 'ended';
+    next.updatedAt = Date.now();
     next.game = {
       ...game,
       phase: 'ended',
       currentTurnUid: null,
-      showdownMessage: '남은 플레이어가 없어 게임이 종료되었습니다.'
+      showdownMessage: message,
+      settlementId: makeId(),
+      endedAt: Date.now()
     };
+    addSystemChat(next, message);
     return next;
   }
 
@@ -363,8 +424,8 @@ export function settleShowdown(room: Room, cards: Record<string, Card>): Room {
   const winnerNames = winners.map((winner) => winner.nickname).join(', ');
   const message =
     winners.length === 1
-      ? `${winnerNames}님이 가장 높은 카드로 팟 ${game.pot} 크레딧을 획득했습니다.`
-      : `${winnerNames}님이 동점으로 팟 ${game.pot} 크레딧을 나누었습니다.`;
+      ? `${winnerNames}님이 가장 높은 카드로 ${game.pot} 크레딧을 가져갑니다.`
+      : `${winnerNames}님이 같은 카드 점수로 ${game.pot} 크레딧을 나눕니다.`;
   const remainingPlayers = getPlayers(next).filter((player) => playersById[player.uid]?.creditsAtTable > 0);
   const isGameOver = remainingPlayers.length < MIN_PLAYERS;
   const showdownMessage = isGameOver ? `${message} 게임 종료 조건에 도달했습니다.` : message;
@@ -376,13 +437,14 @@ export function settleShowdown(room: Room, cards: Record<string, Card>): Room {
     phase: isGameOver ? 'ended' : 'showdown',
     currentTurnUid: null,
     winnerUids: winners.map((winner) => winner.uid),
-    settlementId: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    settlementId: makeId(),
     showdownMessage,
     revealedCards: cards,
     endedAt: Date.now()
   };
 
   addLog(next, showdownMessage);
+  addSystemChat(next, showdownMessage);
   return next;
 }
 
@@ -417,7 +479,8 @@ export function resetRoomForNextRound(room: Room): Room {
     minRaise: next.minRaise,
     currentTurnUid: null,
     turnOrder: [],
-    actionsThisRound: {}
+    actionsThisRound: {},
+    openVotes: {}
   };
   addLog(next, '다음 라운드 준비 상태로 전환했습니다.');
   return next;
@@ -451,8 +514,9 @@ export function resetTableCredits(room: Room): Room {
     minRaise: next.minRaise,
     currentTurnUid: null,
     turnOrder: [],
-    actionsThisRound: {}
+    actionsThisRound: {},
+    openVotes: {}
   };
-  addLog(next, '방 크레딧을 초기화했습니다.');
+  addLog(next, '테이블 크레딧을 초기화했습니다.');
   return next;
 }

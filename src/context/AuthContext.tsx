@@ -42,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           markedOnline = true;
           update(profileRef, {
             online: true,
+            currentRoom: null,
             lastSeen: Date.now()
           }).catch(() => undefined);
         }

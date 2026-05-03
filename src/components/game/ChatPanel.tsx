@@ -42,14 +42,23 @@ export function ChatPanel({ room, profile, onToast }: ChatPanelProps) {
         {messages.length === 0 ? (
           <p className="py-8 text-center text-sm font-semibold text-muted">아직 메시지가 없습니다.</p>
         ) : (
-          messages.map((chat) => (
-            <div key={chat.id} className={chat.uid === profile.uid ? 'text-right' : ''}>
-              <p className="mb-1 text-xs font-bold text-muted">{chat.nickname}</p>
-              <p className="inline-block max-w-[85%] rounded-2xl bg-white/50 px-3 py-2 text-sm font-semibold text-ink shadow-neu-sm">
-                {chat.message}
-              </p>
-            </div>
-          ))
+          messages.map((chat) => {
+            const isOwn = chat.uid === profile.uid;
+            const isSystem = chat.uid === 'system';
+
+            return (
+              <div key={chat.id} className={isOwn ? 'text-right' : isSystem ? 'text-center' : ''}>
+                <p className="mb-1 text-xs font-bold text-muted">{chat.nickname}</p>
+                <p
+                  className={`inline-block max-w-[85%] rounded-2xl px-3 py-2 text-sm font-semibold shadow-neu-sm ${
+                    isSystem ? 'bg-mint/15 text-[#23766f]' : 'bg-white/50 text-ink'
+                  }`}
+                >
+                  {chat.message}
+                </p>
+              </div>
+            );
+          })
         )}
       </div>
       <div className="mt-3 flex gap-2">

@@ -16,7 +16,7 @@ export function Modal({ title, open, onClose, children }: ModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/20 p-4 backdrop-blur-sm">
       <Panel className="w-full max-w-lg">
         <div className="mb-5 flex items-center justify-between gap-3">
           <h2 className="text-xl font-black text-ink">{title}</h2>

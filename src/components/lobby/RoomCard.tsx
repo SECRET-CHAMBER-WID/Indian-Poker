@@ -1,4 +1,4 @@
-import { DoorOpen, Eye, Users } from 'lucide-react';
+import { DoorOpen, Users } from 'lucide-react';
 import { getPlayers } from '../../lib/gameEngine';
 import type { Room } from '../../types';
 import { Badge } from '../neumorphic/Badge';
@@ -38,7 +38,7 @@ export function RoomCard({ room, onJoin, joining }: RoomCardProps) {
         </div>
         <div className="rounded-2xl bg-base p-3 shadow-neu-inset">
           <strong className="block text-ink">{room.ante}</strong>
-          <span className="text-muted">앤티</span>
+          <span className="text-muted">기본 베팅</span>
         </div>
         <div className="rounded-2xl bg-base p-3 shadow-neu-inset">
           <strong className="block text-ink">{room.round}</strong>
@@ -48,12 +48,12 @@ export function RoomCard({ room, onJoin, joining }: RoomCardProps) {
       <Button
         className="w-full"
         data-testid={`join-room-${room.id}`}
-        disabled={joining}
-        icon={isWaiting ? <DoorOpen size={18} /> : <Eye size={18} />}
+        disabled={joining || !isWaiting}
+        icon={<DoorOpen size={18} />}
         onClick={() => onJoin(room.id)}
-        variant={isWaiting ? 'primary' : 'soft'}
+        variant="primary"
       >
-        {isWaiting ? '입장' : '관전'}
+        입장
       </Button>
     </Panel>
   );

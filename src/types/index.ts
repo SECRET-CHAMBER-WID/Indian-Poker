@@ -56,6 +56,7 @@ export interface GameState {
   turnStartedAt?: number;
   turnEndsAt?: number;
   actionsThisRound: Record<string, boolean>;
+  openVotes?: Record<string, boolean>;
   winnerUids?: string[];
   settlementId?: string;
   showdownMessage?: string;
@@ -87,6 +88,7 @@ export interface Room {
   createdBy: string;
   createdByName: string;
   maxPlayers: number;
+  isPrivate?: boolean;
   ante: number;
   minRaise: number;
   turnSeconds: number;

@@ -1,5 +1,6 @@
 import {
   createUserWithEmailAndPassword,
+  fetchSignInMethodsForEmail,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
@@ -61,6 +62,7 @@ async function ensurePlayerProfile(user: User, nickname: string) {
   await update(profileRef, {
     nickname,
     online: true,
+    currentRoom: null,
     lastSeen: Date.now()
   });
 }
@@ -78,26 +80,29 @@ export async function loginOrRegister(nickname: string, pin: string) {
 
   const email = nicknameToAuthEmail(cleanNickname);
   const password = firebasePasswordFromPin(pin);
+  const methods = await fetchSignInMethodsForEmail(auth, email).catch(() => []);
 
-  try {
+  if (methods.length > 0) {
     const credential = await signInWithEmailAndPassword(auth, email, password);
     await ensurePlayerProfile(credential.user, cleanNickname);
     return credential.user;
-  } catch (signInError) {
-    try {
-      const credential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(credential.user, { displayName: cleanNickname });
+  }
+
+  try {
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(credential.user, { displayName: cleanNickname });
+    await ensurePlayerProfile(credential.user, cleanNickname);
+    return credential.user;
+  } catch (createError) {
+    const code = (createError as { code?: string }).code;
+
+    if (code === 'auth/email-already-in-use') {
+      const credential = await signInWithEmailAndPassword(auth, email, password);
       await ensurePlayerProfile(credential.user, cleanNickname);
       return credential.user;
-    } catch (createError) {
-      const code = (createError as { code?: string }).code;
-
-      if (code === 'auth/email-already-in-use') {
-        throw new Error('이미 사용 중인 이름입니다. 기존 4자리 비밀번호를 입력해 주세요.');
-      }
-
-      throw signInError;
     }
+
+    throw createError;
   }
 }
 
