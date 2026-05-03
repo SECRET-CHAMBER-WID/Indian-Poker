@@ -10,13 +10,17 @@ function cloneRoom(room: Room): Room {
 
 function makeLog(message: string, actorUid?: string): GameLog {
   const createdAt = Date.now();
-
-  return {
+  const log: GameLog = {
     id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
     createdAt,
-    message,
-    actorUid
+    message
   };
+
+  if (actorUid) {
+    log.actorUid = actorUid;
+  }
+
+  return log;
 }
 
 function addLog(room: Room, message: string, actorUid?: string) {
@@ -171,9 +175,9 @@ function isBettingSettled(room: Room) {
     return true;
   }
 
-  return actablePlayers.every(
-    (player) => player.roundBet >= game.currentBet && game.actionsThisRound[player.uid]
-  );
+  const actionsThisRound = game.actionsThisRound ?? {};
+
+  return actablePlayers.every((player) => player.roundBet >= game.currentBet && actionsThisRound[player.uid]);
 }
 
 function moveTurn(room: Room, actorUid: string) {
@@ -226,6 +230,9 @@ export function reduceBettingAction(room: Room, actorUid: string, action: BetAct
   if (!game || game.phase !== 'betting') {
     throw new Error('현재 베팅 가능한 상태가 아닙니다.');
   }
+
+  game.actionsThisRound = game.actionsThisRound ?? {};
+  game.turnOrder = game.turnOrder ?? getLivePlayers(next).map((player) => player.uid);
 
   if (!actor || actor.status !== 'active') {
     throw new Error('베팅 가능한 플레이어가 아닙니다.');

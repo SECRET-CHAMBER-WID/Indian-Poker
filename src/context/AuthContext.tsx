@@ -33,15 +33,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const profileRef = ref(database, `users/${user.uid}`);
+      let markedOnline = false;
       unsubscribeProfile = onValue(profileRef, (snapshot) => {
         setProfile((snapshot.val() ?? null) as UserProfile | null);
         setLoading(false);
-      });
 
-      update(profileRef, {
-        online: true,
-        lastSeen: Date.now()
-      }).catch(() => undefined);
+        if (snapshot.exists() && !markedOnline) {
+          markedOnline = true;
+          update(profileRef, {
+            online: true,
+            lastSeen: Date.now()
+          }).catch(() => undefined);
+        }
+      });
 
       onDisconnect(ref(database, `users/${user.uid}/online`)).set(false).catch(() => undefined);
       onDisconnect(ref(database, `users/${user.uid}/lastSeen`)).set(Date.now()).catch(() => undefined);

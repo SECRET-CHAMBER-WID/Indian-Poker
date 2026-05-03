@@ -49,10 +49,10 @@ export function LoginScreen({ onToast }: LoginScreenProps) {
   };
 
   return (
-    <main className="min-h-screen bg-base px-4 py-8 text-ink">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center">
-        <div className="grid w-full gap-6 lg:grid-cols-[1fr_440px] lg:items-center">
-          <section className="space-y-6">
+    <main className="min-h-screen bg-base px-3 py-4 text-ink sm:px-4 sm:py-8">
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl items-center">
+        <div className="grid w-full gap-4 sm:gap-6 lg:grid-cols-[1fr_440px] lg:items-center">
+          <section className="space-y-4 sm:space-y-6">
             <div className="inline-flex items-center gap-3 rounded-full bg-base px-5 py-3 shadow-neu-sm">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-ink text-xs font-black text-white shadow-neu-inset">
                 SC
@@ -63,16 +63,16 @@ export function LoginScreen({ onToast }: LoginScreenProps) {
               <Sparkles size={18} />
               실시간 인디언 포커
             </div>
-            <div className="max-w-2xl space-y-4">
-              <h1 className="text-4xl font-black leading-tight text-ink sm:text-5xl">카드는 보이지 않고, 판은 실시간으로 움직입니다.</h1>
-              <p className="text-lg leading-8 text-muted">
+            <div className="max-w-2xl space-y-3 sm:space-y-4">
+              <h1 className="text-3xl font-black leading-tight text-ink sm:text-5xl">카드는 보이지 않고, 판은 실시간으로 움직입니다.</h1>
+              <p className="text-base leading-7 text-muted sm:text-lg sm:leading-8">
                 2명부터 8명까지 방을 만들고 준비 동의 후 누구나 게임을 시작할 수 있습니다. 본인 카드는 숨겨지고,
                 상대 카드와 베팅 흐름만 보고 승부합니다.
               </p>
             </div>
-            <div className="grid max-w-3xl gap-4 sm:grid-cols-3">
+            <div className="grid max-w-3xl grid-cols-3 gap-2 sm:gap-4">
               {['방 생성/입장', '턴 타이머', '크레딧 정산'].map((item) => (
-                <div key={item} className="rounded-3xl bg-base p-5 text-center font-bold text-muted shadow-neu-sm">
+                <div key={item} className="rounded-2xl bg-base p-3 text-center text-xs font-bold text-muted shadow-neu-sm sm:rounded-3xl sm:p-5 sm:text-base">
                   {item}
                 </div>
               ))}
@@ -92,6 +92,7 @@ export function LoginScreen({ onToast }: LoginScreenProps) {
               <Input
                 label="이름"
                 maxLength={16}
+                data-testid="login-name"
                 onChange={(event) => setNickname(event.target.value)}
                 placeholder="닉네임"
                 value={nickname}
@@ -100,6 +101,7 @@ export function LoginScreen({ onToast }: LoginScreenProps) {
                 inputMode="numeric"
                 label="4자리 비밀번호"
                 maxLength={4}
+                data-testid="login-pin"
                 onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
@@ -112,6 +114,7 @@ export function LoginScreen({ onToast }: LoginScreenProps) {
               />
               <Button
                 className="w-full"
+                data-testid="login-submit"
                 disabled={submitting || !nickname.trim() || pin.length !== 4}
                 icon={<LogIn size={18} />}
                 onClick={submit}

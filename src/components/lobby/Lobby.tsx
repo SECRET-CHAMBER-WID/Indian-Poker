@@ -60,9 +60,9 @@ export function Lobby({ onToast }: LobbyProps) {
   };
 
   return (
-    <main className="min-h-screen bg-base px-4 py-6 text-ink">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-base px-3 py-4 text-ink sm:px-4 sm:py-6">
+      <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
+        <header className="rounded-[22px] bg-base p-4 shadow-neu sm:rounded-[28px] sm:p-5 md:flex md:items-center md:justify-between">
           <div>
             <BrandMark />
             <h1 className="mt-3 text-3xl font-black">로비</h1>
@@ -70,17 +70,17 @@ export function Lobby({ onToast }: LobbyProps) {
               {profile.nickname} · {profile.credits.toLocaleString()} 크레딧 · {profile.wins}승 {profile.losses}패
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button icon={<Plus size={18} />} onClick={() => setCreateOpen(true)} variant="primary">
+          <div className="mt-4 grid grid-cols-2 gap-2 md:mt-0 md:flex md:flex-wrap md:gap-3">
+            <Button className="w-full md:w-auto" data-testid="open-create-room" icon={<Plus size={18} />} onClick={() => setCreateOpen(true)} variant="primary">
               방 만들기
             </Button>
-            <Button icon={<LogOut size={18} />} onClick={logout}>
+            <Button className="w-full md:w-auto" icon={<LogOut size={18} />} onClick={logout}>
               로그아웃
             </Button>
           </div>
         </header>
 
-        <Panel className="grid gap-4 p-4 lg:grid-cols-[1fr_auto] lg:items-end">
+        <Panel className="grid gap-3 p-4 sm:gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
           <Input
             label="방 코드 입장"
             maxLength={5}
@@ -93,12 +93,12 @@ export function Lobby({ onToast }: LobbyProps) {
             placeholder="ABCDE"
             value={roomCode}
           />
-          <Button disabled={joining || !roomCode.trim()} icon={<Search size={18} />} onClick={joinByCode} variant="primary">
+          <Button className="w-full lg:w-auto" disabled={joining || !roomCode.trim()} icon={<Search size={18} />} onClick={joinByCode} variant="primary">
             코드로 입장
           </Button>
         </Panel>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
           {roomList.length === 0 ? (
             <Panel className="md:col-span-2 xl:col-span-3">
               <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">

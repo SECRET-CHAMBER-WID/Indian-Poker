@@ -41,15 +41,15 @@ export function BettingControls({ room, player, disabled, onCall, onFold, onRais
   };
 
   return (
-    <Panel className="space-y-4 p-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Button disabled={disabled || busy} icon={<PhoneCall size={18} />} onClick={() => run(onCall)} variant="primary">
+    <Panel className="sticky bottom-3 z-30 space-y-3 p-3 sm:space-y-4 sm:p-4 lg:static" data-testid="betting-controls">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <Button data-testid="call-action" disabled={disabled || busy} icon={<PhoneCall size={18} />} onClick={() => run(onCall)} variant="primary">
           {toCall === 0 ? '체크' : `콜 ${Math.min(toCall, player?.creditsAtTable ?? 0)}`}
         </Button>
-        <Button disabled={disabled || busy} icon={<Flag size={18} />} onClick={() => run(onFold)} variant="danger">
+        <Button data-testid="fold-action" disabled={disabled || busy} icon={<Flag size={18} />} onClick={() => run(onFold)} variant="danger">
           폴드
         </Button>
-        <Button disabled={!canRaise || busy} icon={<MoveUpRight size={18} />} onClick={() => run(() => onRaise(raiseTo))}>
+        <Button data-testid="raise-action" disabled={!canRaise || busy} icon={<MoveUpRight size={18} />} onClick={() => run(() => onRaise(raiseTo))}>
           레이즈
         </Button>
       </div>

@@ -36,7 +36,7 @@ export function ChatPanel({ room, profile, onToast }: ChatPanelProps) {
   };
 
   return (
-    <Panel className="flex h-full min-h-[360px] flex-col p-4">
+    <Panel className="flex h-full min-h-[260px] flex-col p-4 lg:min-h-[360px]">
       <h2 className="mb-3 text-lg font-black text-ink">채팅</h2>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto rounded-3xl bg-base p-3 shadow-neu-inset">
         {messages.length === 0 ? (

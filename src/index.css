@@ -20,12 +20,15 @@
 html {
   min-width: 320px;
   background: #eaf0f6;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
   background:
     radial-gradient(circle at top left, rgba(77, 182, 172, 0.14), transparent 34rem),
     radial-gradient(circle at bottom right, rgba(255, 127, 110, 0.13), transparent 30rem),

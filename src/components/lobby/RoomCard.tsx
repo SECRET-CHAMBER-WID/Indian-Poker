@@ -16,7 +16,7 @@ export function RoomCard({ room, onJoin, joining }: RoomCardProps) {
   const isWaiting = room.status === 'waiting';
 
   return (
-    <Panel className="p-4">
+    <Panel className="p-4" data-testid="room-card">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -47,6 +47,7 @@ export function RoomCard({ room, onJoin, joining }: RoomCardProps) {
       </div>
       <Button
         className="w-full"
+        data-testid={`join-room-${room.id}`}
         disabled={joining}
         icon={isWaiting ? <DoorOpen size={18} /> : <Eye size={18} />}
         onClick={() => onJoin(room.id)}

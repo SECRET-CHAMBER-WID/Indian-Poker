@@ -44,7 +44,7 @@ export function CreateRoomModal({ open, profile, onClose, onToast }: CreateRoomM
   return (
     <Modal onClose={onClose} open={open} title="새 방 만들기">
       <div className="space-y-4">
-        <Input label="방 이름" maxLength={24} onChange={(event) => setName(event.target.value)} placeholder="인디언 포커 한 판" value={name} />
+        <Input data-testid="room-name" label="방 이름" maxLength={24} onChange={(event) => setName(event.target.value)} placeholder="인디언 포커 한 판" value={name} />
         <div className="grid gap-4 sm:grid-cols-2">
           <Input
             label="최대 인원"
@@ -65,7 +65,7 @@ export function CreateRoomModal({ open, profile, onClose, onToast }: CreateRoomM
             value={turnSeconds}
           />
         </div>
-        <Button className="w-full" disabled={submitting} icon={<Plus size={18} />} onClick={submit} size="lg" variant="primary">
+        <Button className="w-full" data-testid="create-room-submit" disabled={submitting} icon={<Plus size={18} />} onClick={submit} size="lg" variant="primary">
           {submitting ? '생성 중' : '방 생성'}
         </Button>
       </div>

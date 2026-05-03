@@ -161,9 +161,9 @@ export function GameRoom({ roomId, onToast }: GameRoomProps) {
     .slice(0, 8);
 
   return (
-    <main className="min-h-screen bg-base px-4 py-5 text-ink">
-      <div className="mx-auto max-w-7xl space-y-5">
-        <header className="flex flex-col gap-4 rounded-[28px] bg-base p-4 shadow-neu md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-base px-3 py-3 text-ink sm:px-4 sm:py-5">
+      <div className="mx-auto max-w-7xl space-y-4 sm:space-y-5">
+        <header className="sticky top-2 z-20 flex flex-col gap-4 rounded-[22px] bg-base/95 p-4 shadow-neu backdrop-blur md:static md:flex-row md:items-center md:justify-between md:rounded-[28px]">
           <div>
             <div className="mb-3">
               <BrandMark />
@@ -177,11 +177,11 @@ export function GameRoom({ roomId, onToast }: GameRoomProps) {
               코드 {room.code} · 라운드 {room.round} · 앤티 {room.ante} · 최소 레이즈 {room.minRaise}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button icon={<Copy size={18} />} onClick={copyCode}>
+          <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
+            <Button className="w-full md:w-auto" icon={<Copy size={18} />} onClick={copyCode}>
               코드 복사
             </Button>
-            <Button icon={<ArrowLeft size={18} />} onClick={() => run(() => leaveRoom(room.id, profile))}>
+            <Button className="w-full md:w-auto" icon={<ArrowLeft size={18} />} onClick={() => run(() => leaveRoom(room.id, profile))}>
               나가기
             </Button>
           </div>
@@ -189,31 +189,31 @@ export function GameRoom({ roomId, onToast }: GameRoomProps) {
 
         <section className="grid gap-5 lg:grid-cols-[1fr_340px]">
           <div className="space-y-5">
-            <Panel className="grid gap-3 p-4 sm:grid-cols-4">
-              <div className="rounded-3xl bg-base p-4 text-center shadow-neu-inset">
+            <Panel className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-4 sm:gap-3 sm:p-4">
+              <div className="rounded-2xl bg-base p-3 text-center shadow-neu-inset sm:rounded-3xl sm:p-4">
                 <Coins className="mx-auto mb-2 text-amber" size={24} />
-                <strong className="block text-2xl text-ink">{room.game?.pot ?? 0}</strong>
+                <strong className="block text-xl text-ink sm:text-2xl">{room.game?.pot ?? 0}</strong>
                 <span className="text-sm font-bold text-muted">팟</span>
               </div>
-              <div className="rounded-3xl bg-base p-4 text-center shadow-neu-inset">
+              <div className="rounded-2xl bg-base p-3 text-center shadow-neu-inset sm:rounded-3xl sm:p-4">
                 <ShieldCheck className="mx-auto mb-2 text-mint" size={24} />
-                <strong className="block text-2xl text-ink">{room.game?.currentBet ?? 0}</strong>
+                <strong className="block text-xl text-ink sm:text-2xl">{room.game?.currentBet ?? 0}</strong>
                 <span className="text-sm font-bold text-muted">현재 베팅</span>
               </div>
-              <div className="rounded-3xl bg-base p-4 text-center shadow-neu-inset">
+              <div className="rounded-2xl bg-base p-3 text-center shadow-neu-inset sm:rounded-3xl sm:p-4">
                 <TimerReset className="mx-auto mb-2 text-plum" size={24} />
-                <strong className="block text-2xl text-ink">{phase === 'betting' ? timer : '-'}</strong>
+                <strong className="block text-xl text-ink sm:text-2xl">{phase === 'betting' ? timer : '-'}</strong>
                 <span className="text-sm font-bold text-muted">남은 시간</span>
               </div>
-              <div className="rounded-3xl bg-base p-4 text-center shadow-neu-inset">
-                <strong className="block truncate text-2xl text-ink">
+              <div className="rounded-2xl bg-base p-3 text-center shadow-neu-inset sm:rounded-3xl sm:p-4">
+                <strong className="block truncate text-xl text-ink sm:text-2xl">
                   {room.game?.currentTurnUid ? room.players?.[room.game.currentTurnUid]?.nickname ?? '-' : '-'}
                 </strong>
                 <span className="text-sm font-bold text-muted">현재 턴</span>
               </div>
             </Panel>
 
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
               {players.map((player) => (
                 <PlayerSeat
                   card={cards[player.uid] ?? room.game?.revealedCards?.[player.uid]}
@@ -238,6 +238,7 @@ export function GameRoom({ roomId, onToast }: GameRoomProps) {
                     {myPlayer ? (
                       <Button
                         disabled={busy}
+                        data-testid="toggle-ready"
                         onClick={() => run(() => toggleReady(room.id, profile.uid, !myPlayer.ready))}
                         variant={myPlayer.ready ? 'primary' : 'soft'}
                       >
@@ -246,6 +247,7 @@ export function GameRoom({ roomId, onToast }: GameRoomProps) {
                     ) : null}
                     <Button
                       disabled={busy || !startState.ok || !myPlayer}
+                      data-testid="start-game"
                       icon={<Play size={18} />}
                       onClick={() => run(() => startRoomGame(room, profile.uid), '게임을 시작했습니다.')}
                       variant="primary"

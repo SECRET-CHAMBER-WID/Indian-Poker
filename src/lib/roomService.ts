@@ -286,9 +286,13 @@ export async function startRoomGame(room: Room, starterUid: string) {
     .filter((player) => player.status === 'active' || player.status === 'allIn')
     .map((player) => player.uid);
   const cards = dealCards(cardPlayerIds);
+  const cardUpdates = Object.entries(cards).reduce<Record<string, Card>>((updates, [uid, card]) => {
+    updates[`roomCards/${room.id}/${uid}`] = card;
+    return updates;
+  }, {});
 
   await update(ref(database), {
-    [`roomCards/${room.id}`]: cards,
+    ...cardUpdates,
     [`rooms/${room.id}/game/phase`]: 'betting',
     [`rooms/${room.id}/updatedAt`]: Date.now()
   });
