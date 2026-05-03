@@ -1,0 +1,30 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (root.child('users/' + auth.uid + '/role').val() == 'master' || auth.uid == $uid)",
+        ".validate": "newData.hasChildren(['uid', 'nickname', 'role', 'credits', 'wins', 'losses', 'gamesPlayed']) && newData.child('uid').val() == $uid && newData.child('credits').isNumber() && newData.child('credits').val() >= 0 && newData.child('wins').isNumber() && newData.child('losses').isNumber() && newData.child('gamesPlayed').isNumber() && (root.child('users/' + auth.uid + '/role').val() == 'master' || ((!data.exists() && newData.child('role').val() == 'player') || (data.exists() && newData.child('role').val() == data.child('role').val())))"
+      }
+    },
+    "rooms": {
+      ".indexOn": ["code", "status", "updatedAt"],
+      "$roomId": {
+        ".read": "auth != null && (root.child('users/' + auth.uid + '/role').val() == 'master' || data.child('status').val() == 'waiting' || data.child('players/' + auth.uid).exists() || data.child('spectators/' + auth.uid).exists())",
+        ".write": "auth != null && (root.child('users/' + auth.uid + '/role').val() == 'master' || !data.exists() || data.child('players/' + auth.uid).exists() || newData.child('players/' + auth.uid).exists() || data.child('spectators/' + auth.uid).exists() || newData.child('spectators/' + auth.uid).exists())",
+        ".validate": "newData.hasChildren(['id', 'code', 'name', 'status', 'maxPlayers', 'ante', 'minRaise', 'turnSeconds', 'round', 'createdAt', 'updatedAt']) && newData.child('id').val() == $roomId && newData.child('maxPlayers').isNumber() && newData.child('maxPlayers').val() >= 2 && newData.child('maxPlayers').val() <= 8 && newData.child('ante').isNumber() && newData.child('ante').val() >= 0 && newData.child('minRaise').isNumber() && newData.child('minRaise').val() >= 1 && newData.child('turnSeconds').isNumber() && newData.child('turnSeconds').val() >= 15 && newData.child('turnSeconds').val() <= 120"
+      }
+    },
+    "roomCards": {
+      "$roomId": {
+        "$ownerUid": {
+          ".read": "auth != null && (root.child('users/' + auth.uid + '/role').val() == 'master' || ((root.child('rooms/' + $roomId + '/players/' + auth.uid).exists() || root.child('rooms/' + $roomId + '/spectators/' + auth.uid).exists()) && (auth.uid != $ownerUid || root.child('rooms/' + $roomId + '/game/phase').val() == 'showdown' || root.child('rooms/' + $roomId + '/game/phase').val() == 'ended')))",
+          ".write": "auth != null && (root.child('users/' + auth.uid + '/role').val() == 'master' || root.child('rooms/' + $roomId + '/players/' + auth.uid).exists())",
+          ".validate": "newData.hasChildren(['rank', 'suit', 'value', 'label']) && newData.child('value').isNumber() && newData.child('value').val() >= 2 && newData.child('value').val() <= 14"
+        }
+      }
+    }
+  }
+}
