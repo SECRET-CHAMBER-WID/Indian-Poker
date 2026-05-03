@@ -19,6 +19,7 @@ import {
 } from '../../lib/roomService';
 import type { Card, ToastState } from '../../types';
 import { Badge } from '../neumorphic/Badge';
+import { BrandMark } from '../neumorphic/BrandMark';
 import { Button } from '../neumorphic/Button';
 import { Panel } from '../neumorphic/Panel';
 import { BettingControls } from './BettingControls';
@@ -164,6 +165,9 @@ export function GameRoom({ roomId, onToast }: GameRoomProps) {
       <div className="mx-auto max-w-7xl space-y-5">
         <header className="flex flex-col gap-4 rounded-[28px] bg-base p-4 shadow-neu md:flex-row md:items-center md:justify-between">
           <div>
+            <div className="mb-3">
+              <BrandMark />
+            </div>
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-black">{room.name}</h1>
               <Badge tone={room.status === 'waiting' ? 'mint' : room.status === 'playing' ? 'amber' : 'plum'}>{room.status}</Badge>

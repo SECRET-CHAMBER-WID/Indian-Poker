@@ -5,6 +5,7 @@ import { getPlayers } from '../../lib/gameEngine';
 import { joinRoom, joinRoomByCode } from '../../lib/roomService';
 import { useRealtimeValue } from '../../hooks/useRealtimeValue';
 import type { Room, ToastState } from '../../types';
+import { BrandMark } from '../neumorphic/BrandMark';
 import { Button } from '../neumorphic/Button';
 import { Input } from '../neumorphic/Input';
 import { Panel } from '../neumorphic/Panel';
@@ -63,7 +64,8 @@ export function Lobby({ onToast }: LobbyProps) {
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-black">로비</h1>
+            <BrandMark />
+            <h1 className="mt-3 text-3xl font-black">로비</h1>
             <p className="mt-2 text-sm font-semibold text-muted">
               {profile.nickname} · {profile.credits.toLocaleString()} 크레딧 · {profile.wins}승 {profile.losses}패
             </p>

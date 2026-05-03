@@ -54,7 +54,7 @@ Firebase Hosting, Firebase Authentication, Firebase Realtime Database 기반의 
 - 콜, 레이즈, 폴드, 턴 타이머, 자동 폴드
 - 팟, 현재 베팅, 플레이어별 크레딧, 라운드 승패 자동 정산
 - 방 채팅과 게임 로그
-- 마스터 관리자 패널: 유저 조회, 유저 데이터 삭제, 크레딧 조정, 게임 리셋, 전체 초기화
+- 관리자 패널: 유저 조회, 유저 데이터 삭제, 크레딧 조정, 게임 리셋, 전체 초기화
 - 뉴모피즘 기반 반응형 UI
 
 ## 설치
@@ -102,29 +102,6 @@ firebase use indian-poker-5fa94
 firebase deploy --only database
 ```
 
-## 마스터 계정
-
-앱 로그인 정보:
-
-- 이름: `위드`
-- 비밀번호: `4001`
-
-Firebase Auth는 6자 미만 비밀번호를 허용하지 않기 때문에 앱 내부에서 4자리 PIN을 배포용 비밀번호 문자열로 변환합니다. 최초 1회 아래 스크립트로 마스터 계정을 생성하세요.
-
-```bash
-export FIREBASE_DATABASE_URL="https://indian-poker-5fa94-default-rtdb.asia-southeast1.firebasedatabase.app"
-export GOOGLE_APPLICATION_CREDENTIALS="/absolute/path/to/service-account.json"
-npm run seed:master
-```
-
-Windows PowerShell:
-
-```powershell
-$env:FIREBASE_DATABASE_URL="https://indian-poker-5fa94-default-rtdb.asia-southeast1.firebasedatabase.app"
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
-npm run seed:master
-```
-
 ## 빌드와 배포
 
 ```bash
@@ -147,4 +124,4 @@ git push -u origin main
 
 ## 보안 메모
 
-Realtime Database Rules는 로그인 사용자, 방 참가자, 마스터 권한, 숨김 카드 읽기 권한을 강제합니다. 게임 시작과 베팅 처리는 클라이언트 트랜잭션으로 중복 시작과 턴 충돌을 줄입니다. 실제 금전성 서비스처럼 강한 부정행위 방지가 필요한 환경에서는 카드 배분과 정산을 Cloud Functions 또는 별도 서버에서 최종 검증하도록 확장하는 것을 권장합니다.
+Realtime Database Rules는 로그인 사용자, 방 참가자, 관리자 권한, 숨김 카드 읽기 권한을 강제합니다. 게임 시작과 베팅 처리는 클라이언트 트랜잭션으로 중복 시작과 턴 충돌을 줄입니다. 실제 금전성 서비스처럼 강한 부정행위 방지가 필요한 환경에서는 카드 배분과 정산을 Cloud Functions 또는 별도 서버에서 최종 검증하도록 확장하는 것을 권장합니다.

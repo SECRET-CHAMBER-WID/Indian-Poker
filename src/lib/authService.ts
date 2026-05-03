@@ -73,7 +73,7 @@ export async function loginOrRegister(nickname: string, pin: string) {
   }
 
   if (cleanNickname === '위드') {
-    throw new Error('마스터 계정은 아래 관리자 로그인을 사용해 주세요.');
+    throw new Error('이 이름은 사용할 수 없습니다.');
   }
 
   const email = nicknameToAuthEmail(cleanNickname);
@@ -109,7 +109,7 @@ export async function loginMaster(pin: string) {
 
   if (profile?.role !== 'master' || profile.nickname !== '위드') {
     await signOut(auth);
-    throw new Error('마스터 계정 초기화가 필요합니다. README의 seed:master 단계를 먼저 실행해 주세요.');
+    throw new Error('접속 정보를 확인해 주세요.');
   }
 
   await update(ref(database, `users/${credential.user.uid}`), {

@@ -6,6 +6,7 @@ import { adjustUserCredits, deleteRoom, deleteUserData, resetAllData, resetGameD
 import { getPlayers } from '../../lib/gameEngine';
 import type { Room, ToastState, UserProfile } from '../../types';
 import { Badge } from '../neumorphic/Badge';
+import { BrandMark } from '../neumorphic/BrandMark';
 import { Button } from '../neumorphic/Button';
 import { Input } from '../neumorphic/Input';
 import { Panel } from '../neumorphic/Panel';
@@ -49,7 +50,8 @@ export function AdminPanel({ onToast }: AdminPanelProps) {
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2">
+            <BrandMark />
+            <div className="mb-2 mt-3 flex items-center gap-2">
               <h1 className="text-3xl font-black">관리자 패널</h1>
               <Badge tone="plum">마스터</Badge>
             </div>

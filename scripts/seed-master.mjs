@@ -2,18 +2,23 @@ import admin from 'firebase-admin';
 
 const databaseURL = process.env.FIREBASE_DATABASE_URL;
 const masterEmail = process.env.MASTER_EMAIL ?? 'master@indianpoker.local';
-const masterName = process.env.MASTER_NAME ?? '위드';
-const masterPin = process.env.MASTER_PIN ?? '4001';
+const masterName = process.env.MASTER_NAME;
+const masterPin = process.env.MASTER_PIN;
 
 function firebasePasswordFromPin(pin) {
   if (!/^\d{4}$/.test(pin)) {
     throw new Error('MASTER_PIN must be exactly four digits.');
   }
+
   return `pin-${pin}-indian-poker`;
 }
 
 if (!databaseURL) {
-  throw new Error('Set FIREBASE_DATABASE_URL before running npm run seed:master.');
+  throw new Error('Set FIREBASE_DATABASE_URL before running this script.');
+}
+
+if (!masterName || !masterPin) {
+  throw new Error('Set MASTER_NAME and MASTER_PIN before running this script.');
 }
 
 admin.initializeApp({
@@ -58,7 +63,7 @@ async function main() {
     lastSeen: Date.now()
   });
 
-  console.log(`Master account ready: ${masterName} / ${masterPin}`);
+  console.log(`Operator account ready: ${masterName}`);
   console.log(`Firebase Auth email: ${masterEmail}`);
 }
 
