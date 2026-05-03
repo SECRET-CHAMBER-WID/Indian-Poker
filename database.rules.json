@@ -10,6 +10,7 @@
       }
     },
     "rooms": {
+      ".read": "auth != null",
       ".indexOn": ["code", "status", "updatedAt"],
       "$roomId": {
         ".read": "auth != null && (root.child('users/' + auth.uid + '/role').val() == 'master' || data.child('status').val() == 'waiting' || data.child('players/' + auth.uid).exists() || data.child('spectators/' + auth.uid).exists())",
