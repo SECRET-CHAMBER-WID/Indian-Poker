@@ -112,7 +112,7 @@ firebase deploy --only database
 Firebase Auth는 6자 미만 비밀번호를 허용하지 않기 때문에 앱 내부에서 4자리 PIN을 배포용 비밀번호 문자열로 변환합니다. 최초 1회 아래 스크립트로 마스터 계정을 생성하세요.
 
 ```bash
-export FIREBASE_DATABASE_URL="https://indian-poker-5fa94-default-rtdb.firebaseio.com"
+export FIREBASE_DATABASE_URL="https://indian-poker-5fa94-default-rtdb.asia-southeast1.firebasedatabase.app"
 export GOOGLE_APPLICATION_CREDENTIALS="/absolute/path/to/service-account.json"
 npm run seed:master
 ```
@@ -120,7 +120,7 @@ npm run seed:master
 Windows PowerShell:
 
 ```powershell
-$env:FIREBASE_DATABASE_URL="https://indian-poker-5fa94-default-rtdb.firebaseio.com"
+$env:FIREBASE_DATABASE_URL="https://indian-poker-5fa94-default-rtdb.asia-southeast1.firebasedatabase.app"
 $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
 npm run seed:master
 ```
